@@ -12,8 +12,8 @@ const getUsers = asyncHandler(async (req, res) => {
 //@route POST /api/Users
 //@access public
 const createUser = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { passportID, email, totalCash, totalCredit } = req.body;
+  console.log(req.body);
   if (!passportID || !email || !totalCash || !totalCredit) {
     res.status(400);
     throw new Error("All feilds are required");
