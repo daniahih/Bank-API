@@ -13,15 +13,16 @@ const getUsers = asyncHandler(async (req, res) => {
 //@access public
 const createUser = asyncHandler(async (req, res) => {
   console.log(req.body);
-  const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
+  const { passportID, email, totalCash, totalCredit } = req.body;
+  if (!passportID || !email || !totalCash || !totalCredit) {
     res.status(400);
     throw new Error("All feilds are required");
   }
   const user = await Users.create({
-    name,
+    passportID,
     email,
-    phone,
+    totalCash,
+    totalCredit,
   });
   res.status(200).json(user);
 });

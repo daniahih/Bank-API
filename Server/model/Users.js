@@ -2,18 +2,23 @@ const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema(
   {
-    name: {
+    passportID: {
       type: String,
-      required: [true, "Please add the contact name"],
+      required: [true, "Please Insert your ID"],
     },
     email: {
       type: String,
       required: [true, "Please add the contact email address"],
     },
 
-    phone: {
-      type: String,
-      required: [true, "Please add the contact phone number"],
+    totalCash: {
+      type: Number,
+      default: 0,
+    },
+    totalCredit: {
+      type: Number,
+      min: [0, "Total credit should be positive only"],
+      default: 0,
     },
   },
   {
