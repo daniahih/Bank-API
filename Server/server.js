@@ -20,12 +20,14 @@
 //   });
 // });
 const express = require("express");
+const app = express();
 const connectDb = require("./config/dbConnection");
 const errorHandler = require("./middleware/errorHandler");
 const dotenv = require("dotenv").config();
+const cors = require("cors");
+app.use(cors());
 
 connectDb();
-const app = express();
 
 const port = process.env.PORT || 5000;
 
