@@ -48,10 +48,14 @@ const updateUser = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("user not found ");
   }
-  const UpdatedUser = await Users.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  res.status(200).json(UpdatedUser);
+
+  const updatedUser = await Users.findByIdAndUpdate(
+    req.params.id,
+    updatedFields,
+    { new: true }
+  );
+
+  res.status(200).json(updatedUser);
 });
 
 //@desc delete User
@@ -65,11 +69,29 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
   res.status(200).json(user);
 });
+const depositCash = async (req, res, next) => {
+  const passportId = req.params.passportID;
+  const cash = req.body.cash;
 
+  try {
+    const user = await Users.findOne({ passportID: passportId });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.totalCash += cash;
+    await user.save();
+
+    res.status(200).json({ message: "Cash deposited successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   getUsers,
   getUser,
   createUser,
   updateUser,
   deleteUser,
+  depositCash,
 };
