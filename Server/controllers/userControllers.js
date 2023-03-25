@@ -58,12 +58,11 @@ const updateUser = asyncHandler(async (req, res) => {
 //@route DELETE /api/Users/:id
 //@access public
 const deleteUser = asyncHandler(async (req, res) => {
-  const user = await Users.findById(req.params.id);
+  const user = await Users.findOneAndDelete({ passportID: req.params.id });
   if (!user) {
     res.status(404);
-    throw new Error("user not found ");
+    throw new Error("User not found");
   }
-  await Users.remove();
   res.status(200).json(user);
 });
 
