@@ -42,7 +42,8 @@ const errorHandler = (err, req, res, next) => {
       break;
 
     default:
-      console.log("No Error, All Good");
+      res.status(500).send();
+      console.error(err);
       break;
   }
 };

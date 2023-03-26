@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const { isValidObjectId } = require("mongoose");
 const Users = require("../model/Users");
 //@desc Get all Users
 //@route GET /api/Users
@@ -30,19 +31,26 @@ const createUser = asyncHandler(async (req, res) => {
 //@desc get User
 //@route GET /api/Users/:id
 //@access public
-const getUser = asyncHandler(async (req, res) => {
-  const user = await Users.findById(req.params.id);
-  if (!user) {
-    res.status(404);
-    throw new Error("user not found ");
+const getUser = asyncHandler(async (req, res, next) => {
+  try {
+    const user = await Users.findOne({ passportID: req.params.id });
+    if (!user) {
+      res.status(404);
+      console.log("no user found");
+      throw new Error("user not found ");
+    }
+    res.status(200).json(user);
+  } catch (e) {
+    console.error(e);
+    next(e);
   }
-  res.status(200).json(user);
 });
 
 //@desc update User
 //@route PUT /api/Users/:id
 //@access public
 const updateUser = asyncHandler(async (req, res) => {
+  console.log("update user");
   const user = await Users.findById(req.params.id);
   if (!user) {
     res.status(404);
@@ -55,7 +63,7 @@ const updateUser = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  res.status(200).json(updatedUser);
+  res.status(200).send(updatedUser);
 });
 
 //@desc delete User
@@ -69,24 +77,74 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
   res.status(200).json(user);
 });
+//@desc delete User
+//@route Put /api/Users/:id
+//@access public
 const depositCash = async (req, res, next) => {
-  const passportId = req.params.passportID;
-  const cash = req.body.cash;
-
   try {
-    const user = await Users.findOne({ passportID: passportId });
+    const cash = req.body.cash;
+    const user = await Users.findOne({ passportID: req.params.id });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+    console.log("user", user);
+    user.totalCash += parseInt(cash);
+    console.log("cash", user.totalCash);
+    const updatedUser = await user.save();
 
-    user.totalCash += cash;
-    await user.save();
-
-    res.status(200).json({ message: "Cash deposited successfully" });
+    res.status(200).send(updatedUser);
   } catch (err) {
     next(err);
   }
 };
+
+const updateCredit = async (req, res, next) => {
+  try {
+    const user = await Users.findone({ passportID: req.params.id });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    if (!user.isActive) {
+      res.status(403);
+      throw new Error("User is not active");
+    }
+    if (req.body.credit >= 0) {
+      user.credit = req.body.credit;
+      const updatedUser = await user.save();
+      res.status(200).json({ message: "updated credit done  " });
+    } else {
+      res.status(400);
+      throw new Error("Credit value should be positive");
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+const withdrawMoney = async (req, res, next) => {
+  try {
+    const user = await Users.findone({ passportID: req.params.id });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    if (!user.isActive) {
+      res.status(403);
+      throw new Error("User is not active");
+    }
+    const withdrawAmount = req.body.withdrawAmount;
+    if (withdrawAmount <= user.totalCash + user.totalCredit) {
+      if (withdrawAmount <= user.totalCash) {
+        user.totalCash -= withdrawAmount;
+      } else {
+        user.totalCredit -= withdrawAmount - user.totalCash;
+        user.cash = 0;
+      }
+    }
+  } catch (err) {
+    next(err);
+    throw new Error("Withdraw Amount exceeded the cash and creadit values");
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
@@ -94,4 +152,6 @@ module.exports = {
   updateUser,
   deleteUser,
   depositCash,
+  updateCredit,
+  withdrawMoney,
 };

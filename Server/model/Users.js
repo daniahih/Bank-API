@@ -20,6 +20,10 @@ const userSchema = mongoose.Schema(
       min: [0, "Total credit should be positive only"],
       default: 0,
     },
+    // isActive: {
+    //   type: Boolean,
+    //   required: [true, "Please add the user account status"],
+    // },
   },
   {
     timetamps: true,
@@ -27,27 +31,3 @@ const userSchema = mongoose.Schema(
 );
 
 module.exports = mongoose.model("User", userSchema);
-
-// const mongoose = require("mongoose");
-// const schema = mongoose.Schema;
-
-// const UserSchema = new schema({
-//   passport_id: {
-//     type: Number,
-//     required: [true, "Please add the passport id"],
-//   },
-//   cash: {
-//     type: Number,
-//     default: 0,
-//   },
-//   credit: {
-//     type: Number,
-//     default: 0,
-//   },
-//   active: {
-//     type: Boolean,
-//     default: false,
-//   },
-// });
-
-// module.exports = mongoose.model("User", UserSchema);
