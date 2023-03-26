@@ -113,30 +113,28 @@ const updateCredit = async (req, res, next) => {
     next(err);
   }
 };
-// const withdrawMoney = async (req, res, next) => {
-//   try {
-//     const user = await Users.findone({ passportID: req.params.id });
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-//     if (!user.isActive) {
-//       res.status(403);
-//       throw new Error("User is not active");
-//     }
-//     const withdrawAmount = req.body.withdrawAmount;
-//     if (withdrawAmount <= user.totalCash + user.totalCredit) {
-//       if (withdrawAmount <= user.totalCash) {
-//         user.totalCash -= withdrawAmount;
-//       } else {
-//         user.totalCredit -= withdrawAmount - user.totalCash;
-//         user.cash = 0;
-//       }
-//     }
-//   } catch (err) {
-//     next(err);
-//     throw new Error("Withdraw Amount exceeded the cash and creadit values");
-//   }
-// };
+const withdrawMoney = async (req, res, next) => {
+  try {
+    const user = await Users.findOne({ passportID: req.params.id });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const withdrawAmount = req.body.withdrawAmount;
+    if (withdrawAmount <= user.totalCash + user.totalCredit) {
+      if (withdrawAmount <= user.totalCash) {
+        user.totalCash -= withdrawAmount;
+      } else {
+        user.totalCredit -= withdrawAmount;
+        user.totalCash = 0;
+      }
+    }
+    const updatedUser = await user.save();
+    res.status(200).send(updatedUser);
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   getUsers,
@@ -146,5 +144,5 @@ module.exports = {
   deleteUser,
   depositCash,
   updateCredit,
-  // withdrawMoney,
+  withdrawMoney,
 };
