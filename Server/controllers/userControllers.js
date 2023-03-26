@@ -135,6 +135,43 @@ const withdrawMoney = async (req, res, next) => {
     next(err);
   }
 };
+const Transfer = async (req, res, next) => {
+  const user1 = await Users.findOne({
+    passportID: req.params.id,
+  });
+  const user2 = await Users.findOne({
+    passportID: req.body.destinationUser,
+  });
+  if (!user1) {
+    res.status(404);
+    throw new Error("User To transfer from is not found");
+  }
+
+  if (!user2) {
+    res.status(404);
+    throw new Error("User To transfer to is not found");
+  }
+  const transferAmount = req.body.transferAmount;
+  if (transferAmount <= user1.totalCash + user1.totalCredit) {
+    if (transferAmount <= user1.totalCash) {
+      user1.totalCash -= transferAmount;
+      user2.totalCash += transferAmount;
+    } else {
+      user1.totalCredit -= transferAmount - user1.cash;
+      user1.totalCash = 0;
+      user2.totalCash += transferAmount;
+    }
+    const updatedUser1 = await user1.save();
+    res.status(200).send(updatedUser1);
+    const updatedUser2 = await user2.save();
+    res.status(200).send(updatedUser2);
+  }
+
+  try {
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   getUsers,
@@ -145,4 +182,5 @@ module.exports = {
   depositCash,
   updateCredit,
   withdrawMoney,
+  Transfer,
 };
